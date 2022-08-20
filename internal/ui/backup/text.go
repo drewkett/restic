@@ -16,23 +16,28 @@ type TextProgress struct {
 	*ui.Message
 	*ui.StdioWrapper
 
-	term *termstatus.Terminal
+	term            *termstatus.Terminal
+	noStatusUpdates bool
 }
 
 // assert that Backup implements the ProgressPrinter interface
 var _ ProgressPrinter = &TextProgress{}
 
 // NewTextProgress returns a new backup progress reporter.
-func NewTextProgress(term *termstatus.Terminal, verbosity uint) *TextProgress {
+func NewTextProgress(term *termstatus.Terminal, verbosity uint, noStatusUpdates bool) *TextProgress {
 	return &TextProgress{
-		Message:      ui.NewMessage(term, verbosity),
-		StdioWrapper: ui.NewStdioWrapper(term),
-		term:         term,
+		Message:         ui.NewMessage(term, verbosity),
+		StdioWrapper:    ui.NewStdioWrapper(term),
+		term:            term,
+		noStatusUpdates: noStatusUpdates,
 	}
 }
 
 // Update updates the status lines.
 func (b *TextProgress) Update(total, processed Counter, errors uint, currentFiles map[string]struct{}, start time.Time, secs uint64) {
+	if b.noStatusUpdates {
+		return
+	}
 	var status string
 	if total.Files == 0 && total.Dirs == 0 {
 		// no total count available yet

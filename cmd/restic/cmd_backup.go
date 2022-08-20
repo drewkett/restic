@@ -552,9 +552,9 @@ func runBackup(opts BackupOptions, gopts GlobalOptions, term *termstatus.Termina
 
 	var progressPrinter backup.ProgressPrinter
 	if gopts.JSON {
-		progressPrinter = backup.NewJSONProgress(term, gopts.verbosity)
+		progressPrinter = backup.NewJSONProgress(term, gopts.verbosity, gopts.NoProgress)
 	} else {
-		progressPrinter = backup.NewTextProgress(term, gopts.verbosity)
+		progressPrinter = backup.NewTextProgress(term, gopts.verbosity, gopts.NoProgress)
 	}
 	progressReporter := backup.NewProgress(progressPrinter)
 

@@ -17,20 +17,22 @@ type JSONProgress struct {
 	*ui.Message
 	*ui.StdioWrapper
 
-	term *termstatus.Terminal
-	v    uint
+	term            *termstatus.Terminal
+	v               uint
+	noStatusUpdates bool
 }
 
 // assert that Backup implements the ProgressPrinter interface
 var _ ProgressPrinter = &JSONProgress{}
 
 // NewJSONProgress returns a new backup progress reporter.
-func NewJSONProgress(term *termstatus.Terminal, verbosity uint) *JSONProgress {
+func NewJSONProgress(term *termstatus.Terminal, verbosity uint, noStatusUpdates bool) *JSONProgress {
 	return &JSONProgress{
-		Message:      ui.NewMessage(term, verbosity),
-		StdioWrapper: ui.NewStdioWrapper(term),
-		term:         term,
-		v:            verbosity,
+		Message:         ui.NewMessage(term, verbosity),
+		StdioWrapper:    ui.NewStdioWrapper(term),
+		term:            term,
+		v:               verbosity,
+		noStatusUpdates: noStatusUpdates,
 	}
 }
 
@@ -53,6 +55,9 @@ func (b *JSONProgress) error(status interface{}) {
 
 // Update updates the status lines.
 func (b *JSONProgress) Update(total, processed Counter, errors uint, currentFiles map[string]struct{}, start time.Time, secs uint64) {
+	if b.noStatusUpdates {
+		return
+	}
 	status := statusUpdate{
 		MessageType:      "status",
 		SecondsElapsed:   uint64(time.Since(start) / time.Second),
